@@ -1,2 +1,2 @@
 # nano-bandana-tool
-A tool to create transparent images with Nano Bandana (and Pro)
+A tool to create transparent images with Nano Banana (and Pro)
