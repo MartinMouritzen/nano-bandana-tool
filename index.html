@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nano Bandana Alpha Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#06B6D4',
+                        'primary-dark': '#0891B2',
+                        'dark': '#0F172A',
+                        'darker': '#020617',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .drop-zone {
+            transition: all 0.3s ease;
+        }
+        .drop-zone.drag-over {
+            border-color: #06B6D4;
+            background-color: rgba(6, 182, 212, 0.1);
+            transform: scale(1.02);
+        }
+        .history-item:hover {
+            background-color: rgba(6, 182, 212, 0.1);
+        }
+        body {
+            transition: background-color 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-dark">
+    <!-- Header -->
+    <header class="bg-darker dark:bg-darker border-b-2 border-primary/20 text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold">
+                    <span class="text-primary">Nano Bandana</span> Alpha Tool
+                </h1>
+                <p class="text-gray-300 text-sm mt-1">Extract perfect transparency from black & white backgrounds</p>
+            </div>
+            <button id="theme-toggle" class="p-2 rounded-lg bg-dark hover:bg-primary/20 transition" aria-label="Toggle theme">
+                <!-- Sun icon (show in dark mode) -->
+                <svg id="sun-icon" class="w-6 h-6 text-yellow-300 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <!-- Moon icon (show in light mode) -->
+                <svg id="moon-icon" class="w-6 h-6 text-gray-700 dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <div class="flex">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white dark:bg-darker border-r dark:border-primary/10 shadow-lg min-h-screen p-4">
+            <h2 class="text-lg font-semibold text-dark dark:text-white mb-4">History</h2>
+            <div id="history-list" class="space-y-2">
+                <p class="text-gray-400 dark:text-gray-500 text-sm">No history yet</p>
+            </div>
+            <button
+                id="clear-history"
+                class="mt-4 w-full bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition text-sm hidden"
+            >
+                Clear History
+            </button>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-8">
+            <div class="max-w-6xl mx-auto">
+                <!-- Instructions -->
+                <div id="instructions-box" class="bg-white dark:bg-darker rounded-lg shadow-md p-6 mb-6 relative">
+                    <button id="close-instructions" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition" aria-label="Close instructions">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                    <h2 class="text-xl font-semibold text-dark dark:text-white mb-3">Extract Perfect Transparency from Nano Bandana Images</h2>
+
+                    <div class="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded">
+                        <h3 class="font-semibold text-dark dark:text-white mb-2">🎯 The Problem</h3>
+                        <p class="text-sm text-gray-700 dark:text-gray-300">
+                            AI background removal tools often struggle with semi-transparent objects (glass, smoke, hair), creating harsh edges or green halos.
+                            They're also inconsistent with fine details like shadows and translucent materials.
+                        </p>
+                    </div>
+
+                    <div class="mb-4 p-4 bg-green-50 dark:bg-green-900/20 border-l-4 border-green-500 rounded">
+                        <h3 class="font-semibold text-dark dark:text-white mb-2">✨ The Solution: Mathematical Precision</h3>
+                        <p class="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                            This tool uses a <strong>mathematical approach</strong> instead of AI guessing. By comparing the same image on pure black and pure white backgrounds,
+                            it calculates <em>exact</em> transparency values for every pixel.
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h3 class="font-semibold text-dark dark:text-white mb-2">🚀 How to Use with Nano Bandana / Nano Bandana Pro</h3>
+                        <ol class="list-decimal list-inside space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                            <li>
+                                <strong>Generate your image on white background:</strong>
+                                <div class="ml-6 mt-1 p-2 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">
+                                    "A glass bottle with water droplets, pure white background"
+                                </div>
+                            </li>
+                            <li>
+                                <strong>Generate the EXACT SAME image on black background:</strong>
+                                <div class="ml-6 mt-1 p-2 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">
+                                    "A glass bottle with water droplets, pure black background"
+                                </div>
+                                <p class="ml-6 mt-1 text-xs italic text-gray-600 dark:text-gray-400">
+                                    Tip: Keep the prompt identical except for the background color
+                                </p>
+                            </li>
+                            <li>Drag and drop both generated images into the boxes below</li>
+                            <li>Click <span class="text-primary font-semibold">"Extract Alpha"</span> to generate a mathematically perfect transparent PNG</li>
+                            <li>Download your result with preserved semi-transparency!</li>
+                        </ol>
+                    </div>
+
+                    <div class="text-xs text-gray-500 dark:text-gray-400 border-t dark:border-gray-600 pt-3">
+                        <strong>Why this works:</strong> Semi-transparent pixels appear different on black vs white backgrounds.
+                        The mathematical difference between these two views reveals the exact transparency and true color of each pixel.
+                    </div>
+                </div>
+
+                <!-- Upload Section -->
+                <div class="bg-white dark:bg-darker rounded-lg shadow-md p-6 mb-6">
+                    <h2 class="text-xl font-semibold text-dark dark:text-white mb-4">Upload Images</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <!-- Image on White -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Image on White Background</label>
+                            <div
+                                id="drop-white"
+                                class="drop-zone border-2 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-dark rounded-lg p-8 text-center cursor-pointer hover:border-primary transition"
+                            >
+                                <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Drop image here or click to browse</p>
+                            </div>
+                            <input type="file" id="file-white" accept="image/*" class="hidden">
+                        </div>
+
+                        <!-- Image on Black -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Image on Black Background</label>
+                            <div
+                                id="drop-black"
+                                class="drop-zone border-2 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-dark rounded-lg p-8 text-center cursor-pointer hover:border-primary transition"
+                            >
+                                <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Drop image here or click to browse</p>
+                            </div>
+                            <input type="file" id="file-black" accept="image/*" class="hidden">
+                        </div>
+                    </div>
+
+                    <button
+                        id="process-btn"
+                        class="w-full bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary-dark transition font-semibold disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:text-gray-500 dark:disabled:text-gray-400 disabled:cursor-not-allowed"
+                        disabled
+                    >
+                        Extract Alpha
+                    </button>
+                </div>
+
+                <!-- Results Section -->
+                <div id="results-section" class="bg-white dark:bg-darker rounded-lg shadow-md p-6 hidden">
+                    <h2 class="text-xl font-semibold text-dark dark:text-white mb-4">Transparent Result</h2>
+
+                    <!-- Result Preview -->
+                    <div class="mb-6 flex justify-center">
+                        <div class="max-w-2xl w-full border dark:border-gray-600 rounded-lg overflow-hidden" style="background-image: repeating-linear-gradient(45deg, #d1d5db 25%, transparent 25%, transparent 75%, #d1d5db 75%, #d1d5db), repeating-linear-gradient(45deg, #d1d5db 25%, white 25%, white 75%, #d1d5db 75%, #d1d5db); background-position: 0 0, 10px 10px; background-size: 20px 20px;">
+                            <img id="preview-result" class="w-full h-auto" alt="Result">
+                        </div>
+                    </div>
+
+                    <button
+                        id="download-btn"
+                        class="w-full bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition font-semibold"
+                    >
+                        Download Transparent PNG
+                    </button>
+                </div>
+
+                <!-- Processing Indicator -->
+                <div id="processing-indicator" class="bg-white dark:bg-darker rounded-lg shadow-md p-6 hidden">
+                    <div class="flex items-center justify-center">
+                        <svg class="animate-spin h-8 w-8 text-primary mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span class="text-lg text-dark dark:text-white">Processing images...</span>
+                    </div>
+                </div>
+
+                <!-- FAQ Section -->
+                <div class="bg-white dark:bg-darker rounded-lg shadow-md p-6 mt-6">
+                    <h2 class="text-xl font-semibold text-dark dark:text-white mb-4">Frequently Asked Questions</h2>
+
+                    <div class="space-y-4">
+                        <!-- FAQ Item 1 -->
+                        <div class="border-b dark:border-gray-600 pb-4">
+                            <h3 class="font-semibold text-dark dark:text-white mb-2">❓ Why is text a bit blurry?</h3>
+                            <p class="text-sm text-gray-700 dark:text-gray-300">
+                                The algorithm works at the pixel level, so higher resolution images produce sharper results. When generating images with Nano Bandana,
+                                <strong>request 2K (2048×2048) or even 4K (4096×4096) resolution</strong> for crisp text and fine details.
+                                Higher resolution inputs dramatically improve the quality of your transparent output.
+                            </p>
+                        </div>
+
+                        <!-- FAQ Item 2 -->
+                        <div class="pb-4">
+                            <h3 class="font-semibold text-dark dark:text-white mb-2">❓ Do the images need to be identical?</h3>
+                            <p class="text-sm text-gray-700 dark:text-gray-300">
+                                Yes! The same subject, angle, and composition must be identical in both images - only the background color should change
+                                (pure black vs pure white). Even small differences will create artifacts in the transparency.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Show Tutorial Link (Bottom Right) -->
+    <div id="show-tutorial-link" class="fixed bottom-6 right-6 hidden">
+        <button
+            id="show-tutorial-btn"
+            class="bg-primary text-white px-4 py-2 rounded-lg shadow-lg hover:bg-primary-dark transition text-sm flex items-center gap-2"
+        >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Show Tutorial
+        </button>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-darker border-t border-primary/10 text-white py-8 mt-12">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="text-gray-400 text-sm">
+                        Created by <a href="https://www.martinmouritzen.dk/" target="_blank" rel="noopener noreferrer" class="text-primary hover:text-primary-dark transition font-semibold">Martin Mouritzen</a>
+                    </p>
+                </div>
+                <div class="text-gray-500 text-xs">
+                    <p>Mathematical alpha extraction tool for transparent PNG generation</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // State
+        let imageWhite = null;
+        let imageBlack = null;
+        let resultBlob = null;
+        let resultDataUrl = null;
+
+        // DOM Elements
+        const dropWhite = document.getElementById('drop-white');
+        const dropBlack = document.getElementById('drop-black');
+        const fileWhite = document.getElementById('file-white');
+        const fileBlack = document.getElementById('file-black');
+        const processBtn = document.getElementById('process-btn');
+        const resultsSection = document.getElementById('results-section');
+        const processingIndicator = document.getElementById('processing-indicator');
+        const downloadBtn = document.getElementById('download-btn');
+        const historyList = document.getElementById('history-list');
+        const clearHistoryBtn = document.getElementById('clear-history');
+        const themeToggle = document.getElementById('theme-toggle');
+        const instructionsBox = document.getElementById('instructions-box');
+        const closeInstructionsBtn = document.getElementById('close-instructions');
+        const showTutorialLink = document.getElementById('show-tutorial-link');
+        const showTutorialBtn = document.getElementById('show-tutorial-btn');
+
+        // Theme Management
+        function initTheme() {
+            const savedTheme = localStorage.getItem('alphaExtractTheme');
+            // Default to dark mode if no preference saved
+            if (!savedTheme || savedTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('alphaExtractTheme', isDark ? 'dark' : 'light');
+        }
+
+        themeToggle.addEventListener('click', toggleTheme);
+
+        // Instructions Box Management
+        function initInstructions() {
+            const hideInstructions = localStorage.getItem('alphaExtractHideInstructions') === 'true';
+            if (hideInstructions) {
+                instructionsBox.classList.add('hidden');
+                showTutorialLink.classList.remove('hidden');
+            } else {
+                instructionsBox.classList.remove('hidden');
+                showTutorialLink.classList.add('hidden');
+            }
+        }
+
+        function closeInstructions() {
+            instructionsBox.classList.add('hidden');
+            showTutorialLink.classList.remove('hidden');
+            localStorage.setItem('alphaExtractHideInstructions', 'true');
+        }
+
+        function showInstructions() {
+            instructionsBox.classList.remove('hidden');
+            showTutorialLink.classList.add('hidden');
+            localStorage.setItem('alphaExtractHideInstructions', 'false');
+            // Smooth scroll to tutorial
+            instructionsBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        closeInstructionsBtn.addEventListener('click', closeInstructions);
+        showTutorialBtn.addEventListener('click', showInstructions);
+
+        // IndexedDB Setup
+        let db;
+        const DB_NAME = 'AlphaExtractDB';
+        const STORE_NAME = 'history';
+        const DB_VERSION = 1;
+
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve(db);
+                };
+
+                request.onupgradeneeded = (event) => {
+                    db = event.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        const objectStore = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                        objectStore.createIndex('timestamp', 'timestamp', { unique: false });
+                    }
+                };
+            });
+        }
+
+        // Setup drag and drop for white background
+        setupDropZone(dropWhite, fileWhite, (file) => {
+            imageWhite = file;
+            updateDropZonePreview(dropWhite, file, '#FFFFFF');
+            checkReadyToProcess();
+        });
+
+        // Setup drag and drop for black background
+        setupDropZone(dropBlack, fileBlack, (file) => {
+            imageBlack = file;
+            updateDropZonePreview(dropBlack, file, '#000000');
+            checkReadyToProcess();
+        });
+
+        // Process button
+        processBtn.addEventListener('click', processImages);
+
+        // Download button
+        downloadBtn.addEventListener('click', downloadResult);
+
+        // Clear history button
+        clearHistoryBtn.addEventListener('click', clearHistory);
+
+        // Setup drop zone
+        function setupDropZone(dropZone, fileInput, callback) {
+            // Click to browse
+            dropZone.addEventListener('click', () => fileInput.click());
+
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    callback(e.target.files[0]);
+                }
+            });
+
+            // Drag and drop
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('drag-over');
+            });
+
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('drag-over');
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('drag-over');
+
+                if (e.dataTransfer.files.length > 0) {
+                    callback(e.dataTransfer.files[0]);
+                }
+            });
+        }
+
+        // Update drop zone with preview
+        function updateDropZonePreview(dropZone, file, bgColor) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                dropZone.innerHTML = `
+                    <div class="relative">
+                        <img src="${e.target.result}" class="max-h-32 mx-auto rounded" style="background-color: ${bgColor}">
+                        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">${file.name}</p>
+                    </div>
+                `;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Check if ready to process
+        function checkReadyToProcess() {
+            processBtn.disabled = !(imageWhite && imageBlack);
+        }
+
+        // Load image to canvas
+        function loadImage(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => resolve(img);
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Extract alpha channel (same algorithm as alpha-convert.ts)
+        async function processImages() {
+            try {
+                // Show processing indicator
+                processingIndicator.classList.remove('hidden');
+                resultsSection.classList.add('hidden');
+
+                // Load images
+                const imgWhite = await loadImage(imageWhite);
+                const imgBlack = await loadImage(imageBlack);
+
+                // Check dimensions match
+                if (imgWhite.width !== imgBlack.width || imgWhite.height !== imgBlack.height) {
+                    alert('Error: Images must have identical dimensions!');
+                    processingIndicator.classList.add('hidden');
+                    return;
+                }
+
+                const width = imgWhite.width;
+                const height = imgWhite.height;
+
+                // Create canvases
+                const canvasWhite = document.createElement('canvas');
+                const canvasBlack = document.createElement('canvas');
+                const canvasOutput = document.createElement('canvas');
+
+                canvasWhite.width = canvasBlack.width = canvasOutput.width = width;
+                canvasWhite.height = canvasBlack.height = canvasOutput.height = height;
+
+                // Get contexts
+                const ctxWhite = canvasWhite.getContext('2d', { willReadFrequently: true });
+                const ctxBlack = canvasBlack.getContext('2d', { willReadFrequently: true });
+                const ctxOutput = canvasOutput.getContext('2d', { willReadFrequently: true });
+
+                // Draw images to canvases
+                ctxWhite.drawImage(imgWhite, 0, 0);
+                ctxBlack.drawImage(imgBlack, 0, 0);
+
+                // Get pixel data
+                const dataWhite = ctxWhite.getImageData(0, 0, width, height);
+                const dataBlack = ctxBlack.getImageData(0, 0, width, height);
+                const dataOutput = ctxOutput.createImageData(width, height);
+
+                const pixelsWhite = dataWhite.data;
+                const pixelsBlack = dataBlack.data;
+                const pixelsOutput = dataOutput.data;
+
+                // Background distance: distance between white (255,255,255) and black (0,0,0)
+                const bgDist = Math.sqrt(3 * 255 * 255);
+
+                // Process each pixel
+                for (let i = 0; i < width * height; i++) {
+                    const offset = i * 4;
+
+                    // Get RGB values
+                    const rW = pixelsWhite[offset];
+                    const gW = pixelsWhite[offset + 1];
+                    const bW = pixelsWhite[offset + 2];
+
+                    const rB = pixelsBlack[offset];
+                    const gB = pixelsBlack[offset + 1];
+                    const bB = pixelsBlack[offset + 2];
+
+                    // Calculate pixel distance
+                    const pixelDist = Math.sqrt(
+                        Math.pow(rW - rB, 2) +
+                        Math.pow(gW - gB, 2) +
+                        Math.pow(bW - bB, 2)
+                    );
+
+                    // Calculate alpha
+                    let alpha = 1 - (pixelDist / bgDist);
+                    alpha = Math.max(0, Math.min(1, alpha));
+
+                    // Color recovery from black background
+                    let rOut = 0, gOut = 0, bOut = 0;
+
+                    if (alpha > 0.01) {
+                        rOut = rB / alpha;
+                        gOut = gB / alpha;
+                        bOut = bB / alpha;
+                    }
+
+                    pixelsOutput[offset] = Math.round(Math.min(255, rOut));
+                    pixelsOutput[offset + 1] = Math.round(Math.min(255, gOut));
+                    pixelsOutput[offset + 2] = Math.round(Math.min(255, bOut));
+                    pixelsOutput[offset + 3] = Math.round(alpha * 255);
+                }
+
+                // Put processed data to output canvas
+                ctxOutput.putImageData(dataOutput, 0, 0);
+
+                // Convert to blob
+                resultBlob = await new Promise(resolve => canvasOutput.toBlob(resolve, 'image/png'));
+                resultDataUrl = canvasOutput.toDataURL('image/png');
+
+                // Show results
+                document.getElementById('preview-result').src = resultDataUrl;
+
+                processingIndicator.classList.add('hidden');
+                resultsSection.classList.remove('hidden');
+
+                // Save to history
+                await saveToHistory();
+
+            } catch (error) {
+                console.error('Error processing images:', error);
+                alert('Error processing images. Please try again.');
+                processingIndicator.classList.add('hidden');
+            }
+        }
+
+        // File to data URL
+        function fileToDataUrl(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Download result
+        function downloadResult() {
+            if (!resultBlob) return;
+
+            const url = URL.createObjectURL(resultBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'alpha-extracted.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Save to history (IndexedDB)
+        async function saveToHistory() {
+            try {
+                const entry = {
+                    id: Date.now(),
+                    timestamp: new Date().toISOString(),
+                    resultImage: resultDataUrl
+                };
+
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const objectStore = transaction.objectStore(STORE_NAME);
+                objectStore.add(entry);
+
+                await new Promise((resolve, reject) => {
+                    transaction.oncomplete = resolve;
+                    transaction.onerror = () => reject(transaction.error);
+                });
+
+                // Clean up old entries (keep only last 10)
+                await cleanupOldEntries();
+
+                await renderHistory();
+                console.log('History saved successfully:', entry.id);
+            } catch (error) {
+                console.error('Error saving to history:', error);
+                // Don't fail the entire process if history fails
+            }
+        }
+
+        // Get all history entries (IndexedDB)
+        async function getHistory() {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_NAME], 'readonly');
+                const objectStore = transaction.objectStore(STORE_NAME);
+                const request = objectStore.getAll();
+
+                request.onsuccess = () => {
+                    const entries = request.result;
+                    // Sort by timestamp descending (newest first)
+                    entries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                    resolve(entries);
+                };
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // Clean up old entries (keep only last 10)
+        async function cleanupOldEntries() {
+            const entries = await getHistory();
+            if (entries.length > 10) {
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const objectStore = transaction.objectStore(STORE_NAME);
+
+                // Delete oldest entries
+                for (let i = 10; i < entries.length; i++) {
+                    objectStore.delete(entries[i].id);
+                }
+
+                await new Promise((resolve, reject) => {
+                    transaction.oncomplete = resolve;
+                    transaction.onerror = () => reject(transaction.error);
+                });
+            }
+        }
+
+        // Render history
+        async function renderHistory() {
+            const history = await getHistory();
+            console.log('Rendering history, entries:', history.length);
+
+            if (history.length === 0) {
+                historyList.innerHTML = '<p class="text-gray-400 dark:text-gray-500 text-sm">No history yet</p>';
+                clearHistoryBtn.classList.add('hidden');
+                return;
+            }
+
+            clearHistoryBtn.classList.remove('hidden');
+
+            historyList.innerHTML = history.map(entry => {
+                const date = new Date(entry.timestamp);
+                const timeStr = date.toLocaleString();
+
+                return `
+                    <div class="history-item border dark:border-gray-600 rounded-lg p-3 cursor-pointer transition bg-gray-50 dark:bg-dark" data-id="${entry.id}">
+                        <img src="${entry.resultImage}" class="w-full h-20 object-cover rounded mb-2" style="background-image: repeating-linear-gradient(45deg, #d1d5db 25%, transparent 25%, transparent 75%, #d1d5db 75%, #d1d5db), repeating-linear-gradient(45deg, #d1d5db 25%, white 25%, white 75%, #d1d5db 75%, #d1d5db); background-position: 0 0, 5px 5px; background-size: 10px 10px;">
+                        <p class="text-xs text-gray-500 dark:text-gray-400">${timeStr}</p>
+                        <button class="download-history-btn mt-2 w-full bg-primary text-white text-xs px-2 py-1 rounded hover:bg-primary-dark transition" data-id="${entry.id}">
+                            Download
+                        </button>
+                    </div>
+                `;
+            }).join('');
+
+            // Add event listeners
+            document.querySelectorAll('.history-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('download-history-btn')) {
+                        e.stopPropagation();
+                        downloadFromHistory(parseInt(item.dataset.id));
+                    } else {
+                        loadFromHistory(parseInt(item.dataset.id));
+                    }
+                });
+            });
+        }
+
+        // Load from history
+        async function loadFromHistory(id) {
+            const entry = await getEntryById(id);
+            if (!entry) return;
+
+            // Show result
+            resultDataUrl = entry.resultImage;
+            resultBlob = await (await fetch(entry.resultImage)).blob();
+
+            document.getElementById('preview-result').src = entry.resultImage;
+
+            resultsSection.classList.remove('hidden');
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Get single entry by ID
+        async function getEntryById(id) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_NAME], 'readonly');
+                const objectStore = transaction.objectStore(STORE_NAME);
+                const request = objectStore.get(id);
+
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // Download from history
+        async function downloadFromHistory(id) {
+            const entry = await getEntryById(id);
+            if (!entry) return;
+
+            const blob = await (await fetch(entry.resultImage)).blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `alpha-extracted-${entry.id}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Data URL to File
+        async function dataUrlToFile(dataUrl, filename) {
+            const res = await fetch(dataUrl);
+            const blob = await res.blob();
+            return new File([blob], filename, { type: blob.type });
+        }
+
+        // Clear history
+        async function clearHistory() {
+            if (confirm('Are you sure you want to clear all history?')) {
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const objectStore = transaction.objectStore(STORE_NAME);
+                objectStore.clear();
+
+                await new Promise((resolve, reject) => {
+                    transaction.oncomplete = resolve;
+                    transaction.onerror = () => reject(transaction.error);
+                });
+
+                await renderHistory();
+            }
+        }
+
+        // Initialize
+        async function init() {
+            initTheme();
+            initInstructions();
+            await initDB();
+            await renderHistory();
+        }
+
+        init();
+    </script>
+</body>
+</html>
